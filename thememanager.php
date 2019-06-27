@@ -188,6 +188,4 @@ class ThemeManager extends Module
 			}
 		}
 	}
-
-
 }
