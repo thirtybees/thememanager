@@ -5,6 +5,7 @@ category: front office
 tags:
   - theme
   - template manager
+  - thememanager
 description_short: The template manager module allows you to switch between templates for product, cms, and category pages.
 description: description.md
 images:

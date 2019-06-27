@@ -4,7 +4,7 @@ The template manager module allows you to switch between templates for product, 
 
 ## Description
 
-The thirty bees template manager module allows you to have a different look and feel between product, category, and cms pages. The module comes with and works with the new thirty bees niara theme. 
+The thirty bees template manager module allows you to have a different look and feel between product, category, and cms pages. The module comes with and works with the new thirty bees niara theme.
 
 ## License
 
@@ -30,4 +30,4 @@ For module development, one clones this repository into `modules/` of the shop, 
 
 #### Long Term
 
-* Add a configuration to the module that is json driven to allow more options in the theme.
+* Add a configuration to the module that is json driven to allow more options in the theme
