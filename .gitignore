@@ -1,0 +1,6 @@
+/translations/*
+!/translations/index.php
+
+/config*.xml
+
+thememanager-*.zip
