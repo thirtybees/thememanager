@@ -30,4 +30,4 @@ For module development, one clones this repository into `modules/` of the shop, 
 
 #### Long Term
 
-* Add a configuration to the module that is json driven to allow more options in the theme. 
+* Add a configuration to the module that is json driven to allow more options in the theme.
