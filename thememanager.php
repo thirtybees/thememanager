@@ -42,7 +42,7 @@ class ThemeManager extends Module
         $this->tb_min_version = '1.0.0';
         $this->tb_versions_compliancy = '> 1.0.0';
 		$this->need_instance = 0;
-		
+
 		$this->bootstrap = true;
 
 	 	parent::__construct();
@@ -51,14 +51,14 @@ class ThemeManager extends Module
 		$this->description = $this->l('Lets you choose different templates for different pages');
 		$this->confirmUninstall = $this->l('Are you sure you want to delete this module?');
 	}
-	
+
 	public function install()
 	{
 		if (!parent::install() OR
 			!$this->alterTable() OR
 			!$this->registerHook('displayOverrideTemplate') OR
 			!$this->registerHook('displayAdminCmsContentForm') OR
-			!$this->registerHook('displayAdminProductsExtra') OR 
+			!$this->registerHook('displayAdminProductsExtra') OR
 			!$this->registerHook('displayBackOfficeCategory') OR
 			!$this->registerHook('actionProductUpdate') OR
 			!$this->registerHook('actionObjectCmsUpdateAfter') OR
@@ -67,7 +67,7 @@ class ThemeManager extends Module
 			return false;
 		return true;
 	}
-	
+
 	public function uninstall()
 	{
 		if (!parent::uninstall() OR
@@ -89,7 +89,7 @@ class ThemeManager extends Module
 			$sql2 = 'ALTER TABLE ' . _DB_PREFIX_ . 'product DROP COLUMN `template`';
 			$sql3 = 'ALTER TABLE ' . _DB_PREFIX_ . 'cms DROP COLUMN `template`';
 		}
-			
+
 
 		if(!Db::getInstance()->Execute($sql) || !Db::getInstance()->Execute($sql2) || !Db::getInstance()->Execute($sql3))
 			return false;
@@ -122,7 +122,7 @@ class ThemeManager extends Module
 			if(!Db::getInstance()->update('product', array('template' => Tools::getValue('product_template')), 'id_product = ' . (int)$params['id_product']))
 				$this->controller->errors[] = $this->l('Error: ').mysql_error();
 		}
-		
+
 	}
 
 	public function hookDisplayAdminProductsExtra($params)
@@ -141,7 +141,7 @@ class ThemeManager extends Module
 	{
 		if(!Db::getInstance()->update('cms', array('template' => Tools::getValue('product_template')), 'id_cms = ' . (int)$params['object']->id))
 				$this->controller->errors[] = $this->l('Error: ').mysql_error();
-		
+
 	}
 
 	private function displayTemplateForm($entity)
@@ -174,14 +174,14 @@ class ThemeManager extends Module
 		if(isset($params['controller']->php_self))
 		{
 
-			if(in_array($params['controller']->php_self, $modifiedPages))	
+			if(in_array($params['controller']->php_self, $modifiedPages))
 			{
 				$controller = $params['controller']->php_self;
 				// try to get a specific product template
 				$chosen_template = $this->_getCustomTemplate($controller, Tools::getValue('id_'.$controller));
 				if($chosen_template)
 				{
-					// check that the file exists, and if so override the template				
+					// check that the file exists, and if so override the template
 					if(file_exists(_PS_THEME_DIR_.'/templates/'.$controller.'/'.$chosen_template.'.tpl'))
 						return _PS_THEME_DIR_ .'/templates/'.$controller.'/'.$chosen_template.'.tpl';
 				}

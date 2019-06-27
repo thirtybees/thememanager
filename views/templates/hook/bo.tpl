@@ -19,7 +19,7 @@
 <div class="panel">
 	<div class="panel-heading">{l s='Configuration' mod='pschoosetemplate'}</div>
 	<form action="" method="POST" class="defaultForm form-horizontal" enctype="multipart/form-data">
-		
+
 		<div class="form-group">
 			<label class="col-lg-2">
 				{l s='Product Template' mod='pschoosetemplate'}
@@ -40,7 +40,7 @@
 				<button type="submit" class="btn btn-default" name="eraseProductTemplate">{l s='Delete' mod='pschoosetemplate'}</button>
 			</div>
 		</div>
-		
+
 
 		<div class="form-group">
 			<label class="col-lg-2">
