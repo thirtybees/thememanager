@@ -18,174 +18,326 @@
  */
 
 if (!defined('_TB_VERSION_'))
-	exit;
+    exit;
 
 class ThemeManager extends Module
 {
 
-	protected $_errors = array();
-	protected $_html = '';
-
-	/* Set default configuration values here */
-	protected $_config = array(
-		'PSCHOOSEPRODUCTTEMPLATE' => '',
-		'PSCHOOSECATEGORYTEMPLATE' => '',
-		);
-
-
-	public function __construct()
-	{
-		$this->name = 'thememanager';
-		$this->tab = 'front_office_features';
-		$this->version = '1.0.0';
-		$this->author = 'thirty bees';
+    /**
+     * ThemeManager constructor.
+     *
+     * @throws PrestaShopException
+     */
+    public function __construct()
+    {
+        $this->name = 'thememanager';
+        $this->tab = 'front_office_features';
+        $this->version = '1.0.0';
+        $this->author = 'thirty bees';
         $this->tb_min_version = '1.0.0';
         $this->tb_versions_compliancy = '> 1.0.0';
-		$this->need_instance = 0;
+        $this->need_instance = 0;
 
-		$this->bootstrap = true;
+        $this->bootstrap = true;
 
-	 	parent::__construct();
+        parent::__construct();
 
-		$this->displayName = $this->l('Template Manager');
-		$this->description = $this->l('Lets you choose different templates for different pages');
-		$this->confirmUninstall = $this->l('Are you sure you want to delete this module?');
-	}
+        $this->displayName = $this->l('Template Manager');
+        $this->description = $this->l('Lets you choose different templates for different pages');
+        $this->confirmUninstall = $this->l('Are you sure you want to delete this module?');
+    }
 
-	public function install()
-	{
-		if (!parent::install() OR
-			!$this->alterTable() OR
-			!$this->registerHook('displayOverrideTemplate') OR
-			!$this->registerHook('displayAdminCmsContentForm') OR
-			!$this->registerHook('displayAdminProductsExtra') OR
-			!$this->registerHook('displayBackOfficeCategory') OR
-			!$this->registerHook('actionProductUpdate') OR
-			!$this->registerHook('actionObjectCmsUpdateAfter') OR
-			!$this->registerHook('categoryUpdate')
-			)
-			return false;
-		return true;
-	}
+    /**
+     * Module installation
+     *
+     * @param bool $createTables
+     * @return bool
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     */
+    public function install($createTables = true)
+    {
+        if (!parent::install() OR
+            !$this->createDatabase($createTables) OR
+            !$this->registerHook('displayOverrideTemplate') OR
+            !$this->registerHook('displayAdminCmsContentForm') OR
+            !$this->registerHook('displayAdminProductsExtra') OR
+            !$this->registerHook('displayBackOfficeCategory') OR
+            !$this->registerHook('actionProductUpdate') OR
+            !$this->registerHook('actionObjectCmsUpdateAfter') OR
+            !$this->registerHook('categoryUpdate')
+        )
+            return false;
+        return true;
+    }
 
-	public function uninstall()
-	{
-		if (!parent::uninstall() OR
-			!$this->alterTable('remove')
-			)
-			return false;
-		return true;
-	}
+    /**
+     * Module uninstallation
+     *
+     * @param bool $removeTables
+     *
+     * @return bool
+     */
+    public function uninstall($removeTables = true)
+    {
+        if (!parent::uninstall() OR
+            !$this->removeDatabase($removeTables)
+        )
+            return false;
+        return true;
+    }
 
-	public function alterTable($method = 'add')
-	{
-		if($method == 'add')
-		{
-			$sql = 'ALTER TABLE ' . _DB_PREFIX_ . 'category ADD `template` VARCHAR(64) NOT NULL';
-			$sql2 = 'ALTER TABLE ' . _DB_PREFIX_ . 'product ADD `template` VARCHAR(64) NOT NULL';
-			$sql3 = 'ALTER TABLE ' . _DB_PREFIX_ . 'cms ADD `template` VARCHAR(64) NOT NULL';
-		} else {
-			$sql = 'ALTER TABLE ' . _DB_PREFIX_ . 'category DROP COLUMN `template`';
-			$sql2 = 'ALTER TABLE ' . _DB_PREFIX_ . 'product DROP COLUMN `template`';
-			$sql3 = 'ALTER TABLE ' . _DB_PREFIX_ . 'cms DROP COLUMN `template`';
-		}
+    /**
+     * Module soft reset
+     *
+     * @return bool
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     */
+    public function reset()
+    {
+        return $this->uninstall(false) && $this->install(false);
+    }
 
+    /**
+     * Hook used to extend category form
+     *
+     * @return string
+     * @throws PrestaShopException
+     * @throws SmartyException
+     */
+    public function hookDisplayBackOfficeCategory()
+    {
+        return $this->displayTemplateForm('category');
+    }
 
-		if(!Db::getInstance()->Execute($sql) || !Db::getInstance()->Execute($sql2) || !Db::getInstance()->Execute($sql3))
-			return false;
-		return true;
-	}
+    /**
+     * Hook called when category is saved
+     *
+     * @param $params
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     */
+    public function hookCategoryUpdate($params)
+    {
+        if (Tools::isSubmit('product_template')) {
+            $this->updateTemplate('category', (int)$params['category']->id, Tools::getValue('product_template'));
+        }
+    }
 
+    /**
+     * Hook used to display extra tab on product page
+     *
+     * @return string
+     * @throws PrestaShopException
+     * @throws SmartyException
+     */
+    public function hookDisplayAdminProductsExtra()
+    {
+        return $this->displayTemplateForm('product');
+    }
 
-	private function _getCustomTemplate($entity, $id)
-	{
-		return Db::getInstance()->getValue('SELECT template FROM '._DB_PREFIX_.$entity.' WHERE id_'.$entity.' = ' . (int)$id);
-	}
+    /**
+     * Hook called when product is saved
+     *
+     * @param $params
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     */
+    public function hookActionProductUpdate($params)
+    {
+        if (Tools::isSubmit('product_template')) {
+            $this->updateTemplate('product', (int)$params['id_product'], Tools::getValue('product_template'));
+        }
+    }
 
+    /**
+     * Hook used to extend CMS form
+     *
+     * @return string
+     * @throws PrestaShopException
+     * @throws SmartyException
+     */
+    public function hookDisplayAdminCmsContentForm()
+    {
+        return $this->displayTemplateForm('cms');
+    }
 
-	public function hookDisplayBackOfficeCategory($params)
-	{
-		return $this->displayTemplateForm('category');
-	}
+    /**
+     * Hook called when CMS object is saved
+     *
+     * @param $params
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     */
+    public function hookActionObjectCmsUpdateAfter($params)
+    {
+        if (Tools::isSubmit('product_template')) {
+            $this->updateTemplate('cms', (int)$params['object']->id, Tools::getValue('product_template'));
+        }
+    }
 
-	public function hookCategoryUpdate($params)
-	{
+    /**
+     * This hook is called to retrieve override template for given controller
+     *
+     * @param array $params
+     * @return string
+     * @throws PrestaShopException
+     */
+    public function hookDisplayOverrideTemplate($params)
+    {
+        $modifiedPages = ['product', 'category', 'cms'];
 
-		if(!Db::getInstance()->update('category', array('template' => Tools::getValue('product_template')), 'id_category = ' . (int)$params['category']->id))
-				$this->controller->errors[] = $this->l('Error: ').mysql_error();
-	}
+        if (isset($params['controller']->php_self)) {
+            $controller = $params['controller']->php_self;
 
-	public function hookActionProductUpdate($params)
-	{
-		if(Tools::isSubmit('product_template'))
-		{
-			if(!Db::getInstance()->update('product', array('template' => Tools::getValue('product_template')), 'id_product = ' . (int)$params['id_product']))
-				$this->controller->errors[] = $this->l('Error: ').mysql_error();
-		}
+            if (in_array($controller, $modifiedPages)) {
+                // try to get a specific product template
+                $template = $this->getCustomTemplate($controller, (int)Tools::getValue('id_' . $controller));
+                if ($template) {
+                    $path = _PS_THEME_DIR_ . '/templates/' . $controller . '/' . $template . '.tpl';
+                    if (file_exists($path)) {
+                        return $path;
+                    }
+                }
+            }
+        }
 
-	}
+        return null;
+    }
 
-	public function hookDisplayAdminProductsExtra($params)
-	{
+    /**
+     * Retrieves template associated with given entity
+     *
+     * @param string $entityType
+     * @param int $entityId
+     * @return string
+     * @throws PrestaShopException
+     */
+    private function getCustomTemplate($entityType, $entityId)
+    {
+        if ($entityId) {
+            $query = (new DbQuery())
+                ->select('template')
+                ->from('thememanager_template')
+                ->where('entity_type = \'' . pSQL($entityType) . '\'')
+                ->where('id_entity = ' . (int)$entityId);
+            return Db::getInstance()->getValue($query);
+        }
+        return null;
+    }
 
-		return $this->displayTemplateForm('product');
+    /**
+     * Saves information about associated template
+     *
+     * @param string $entityType type of entity (product, cms,...)
+     * @param int $entityId unique id of entity
+     * @param string $template selected template
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     */
+    private function updateTemplate($entityType, $entityId, $template)
+    {
+        if ($template) {
+            $insertData = [
+                'entity_type' => $entityType,
+                'id_entity' => (int)$entityId,
+                'template' => $template,
+            ];
+            Db::getInstance()->insert('thememanager_template', $insertData, false, true, Db::ON_DUPLICATE_KEY);
+        } else {
+            Db::getInstance()->delete('thememanager_template', 'entity_type = \'' . pSQL($entityType) . '\' AND id_entity = ' . (int)$entityId);
+        }
+    }
 
-	}
+    /**
+     * Displays template form
+     *
+     * @param string $entityType
+     * @return string
+     * @throws PrestaShopException
+     * @throws SmartyException
+     */
+    private function displayTemplateForm($entityType)
+    {
+        $templates = [];
+        $directory = _PS_THEME_DIR_ . '/templates/' . $entityType;
+        if (is_dir($directory)) {
+            $files = @scandir($directory);
+            foreach ($files as $file) {
+                if ($file !== '.' && $file !== '..') {
+                    $templates[] = str_replace('.tpl', '', $file);
+                }
+            }
+        }
 
-	public function hookDisplayAdminCmsContentForm()
-	{
-		return $this->displayTemplateForm('cms');
-	}
+        $this->context->smarty->assign([
+            'entity' => $entityType,
+            'chosen_template' => $this->getCustomTemplate($entityType, (int)Tools::getValue('id_' . $entityType)),
+            'product_templates' => $templates
+        ]);
 
-	public function hookActionObjectCmsUpdateAfter($params)
-	{
-		if(!Db::getInstance()->update('cms', array('template' => Tools::getValue('product_template')), 'id_cms = ' . (int)$params['object']->id))
-				$this->controller->errors[] = $this->l('Error: ').mysql_error();
+        return $this->display(__FILE__, 'templateSelectForm.tpl');
+    }
 
-	}
+    /**
+     * Creates database tables required by this module
+     *
+     * @param bool $create true if database tables should be created
+     * @return bool
+     */
+    private function createDatabase($create)
+    {
+        if ($create) {
+            return $this->executeSqlScript('install');
+        }
+        return true;
+    }
 
-	private function displayTemplateForm($entity)
-	{
-		$templates = array();
-		$overrides = scandir(_PS_THEME_DIR_ .'/templates/'.$entity);
+    /**
+     * Removes database tables
+     *
+     * @param bool $remove true if database tables should be dropped
+     * @return bool
+     */
+    private function removeDatabase($remove)
+    {
+        if ($remove) {
+            return $this->executeSqlScript('uninstall');
+        }
+        return true;
+    }
 
-		foreach ($overrides as $toverride) {
-			if($toverride != '..' && $toverride != '.')
-			{
-				$toverride = str_replace('.tpl', '', $toverride);
-				$templates[] = $toverride;
-			}
-		}
-
-		$this->context->smarty->assign(array(
-			'entity' => $entity,
-			'chosen_template' => $this->_getCustomTemplate($entity, Tools::getValue('id_'.$entity)),
-			'product_templates' => $templates
-		));
-
-		return $this->display(__FILE__, 'templateSelectForm.tpl');
-	}
-
-	public function hookDisplayOverrideTemplate($params)
-	{
-
-		$modifiedPages = ['product', 'category', 'cms'];
-
-		if(isset($params['controller']->php_self))
-		{
-
-			if(in_array($params['controller']->php_self, $modifiedPages))
-			{
-				$controller = $params['controller']->php_self;
-				// try to get a specific product template
-				$chosen_template = $this->_getCustomTemplate($controller, Tools::getValue('id_'.$controller));
-				if($chosen_template)
-				{
-					// check that the file exists, and if so override the template
-					if(file_exists(_PS_THEME_DIR_.'/templates/'.$controller.'/'.$chosen_template.'.tpl'))
-						return _PS_THEME_DIR_ .'/templates/'.$controller.'/'.$chosen_template.'.tpl';
-				}
-			}
-		}
-	}
+    /**
+     * Executes sql script from sql directory
+     *
+     * @param string $script sql script name to run
+     * @return bool
+     */
+    private function executeSqlScript($script)
+    {
+        $file = dirname(__FILE__) . '/sql/' . $script . '.sql';
+        if (!file_exists($file)) {
+            return false;
+        }
+        $sql = file_get_contents($file);
+        if (!$sql) {
+            return false;
+        }
+        $sql = str_replace(['PREFIX_', 'ENGINE_TYPE', 'CHARSET_TYPE'], [_DB_PREFIX_, _MYSQL_ENGINE_, 'utf8mb4'], $sql);
+        $sql = preg_split("/;\s*[\r\n]+/", $sql);
+        foreach ($sql as $statement) {
+            $stmt = trim($statement);
+            if ($stmt) {
+                try {
+                    if (!Db::getInstance()->execute($stmt)) {
+                        return false;
+                    }
+                } catch (Exception $e) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 }
