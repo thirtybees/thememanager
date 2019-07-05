@@ -286,7 +286,7 @@ class ThemeManager extends Module
      * @param bool $create true if database tables should be created
      * @return bool
      */
-    private function createDatabase($create)
+    public function createDatabase($create)
     {
         if ($create) {
             return $this->executeSqlScript('install');
