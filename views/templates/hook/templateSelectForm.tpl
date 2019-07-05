@@ -17,13 +17,13 @@
  *}
 
 {if $entity == 'product'}
-<div id="product-modulepschoosetemplate" class="panel product-tab">
+<div id="product-modulethememanager" class="panel product-tab">
 
-	<input type="hidden" name="submitted_tabs[]" value="ModulePschoosetemplate">
-	<h3>{l s='Choose a template for this' mod='pschoosetemplate'} {$entity}</h3>
+	<input type="hidden" name="submitted_tabs[]" value="ModuleThemeManager">
+	<h3>{l s='Choose a template for this' mod='thememanager'} {$entity}</h3>
 {/if}
 	<div class="form-group">
-		<label class="control-label col-lg-3">{l s='Template' mod='pschoosetemplate'}</label>
+		<label class="control-label col-lg-3">{l s='Template' mod='thememanager'}</label>
 		<div class="col-lg-9">
 			<select name="product_template">
 				<option value="">--</option>

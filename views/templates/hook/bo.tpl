@@ -17,12 +17,12 @@
  *}
 
 <div class="panel">
-	<div class="panel-heading">{l s='Configuration' mod='pschoosetemplate'}</div>
+	<div class="panel-heading">{l s='Configuration' mod='thememanager'}</div>
 	<form action="" method="POST" class="defaultForm form-horizontal" enctype="multipart/form-data">
 
 		<div class="form-group">
 			<label class="col-lg-2">
-				{l s='Product Template' mod='pschoosetemplate'}
+				{l s='Product Template' mod='thememanager'}
 			</label>
 			<div class="col-lg-4">
 				{if $templates.products|count > 0}
@@ -33,18 +33,18 @@
 						{/foreach}
 					</select>
 				{else}
-					{l s='No Template Found' mod='pschoosetemplate'}
+					{l s='No Template Found' mod='thememanager'}
 				{/if}
 			</div>
 			<div class="col-lg-2">
-				<button type="submit" class="btn btn-default" name="eraseProductTemplate">{l s='Delete' mod='pschoosetemplate'}</button>
+				<button type="submit" class="btn btn-default" name="eraseProductTemplate">{l s='Delete' mod='thememanager'}</button>
 			</div>
 		</div>
 
 
 		<div class="form-group">
 			<label class="col-lg-2">
-				{l s='Category Template' mod='pschoosetemplate'}
+				{l s='Category Template' mod='thememanager'}
 			</label>
 			<div class="col-lg-4">
 				{if $templates.categories|count > 0}
@@ -55,39 +55,39 @@
 						{/foreach}
 					</select>
 				{else}
-					{l s='No Template Found' mod='pschoosetemplate'}
+					{l s='No Template Found' mod='thememanager'}
 				{/if}
 			</div>
 			<div class="col-lg-2">
-				<button type="submit" class="btn btn-default" name="eraseCategoryTemplate">{l s='Delete' mod='pschoosetemplate'}</button>
+				<button type="submit" class="btn btn-default" name="eraseCategoryTemplate">{l s='Delete' mod='thememanager'}</button>
 			</div>
 
 		</div>
 
 		<hr>
-		<h4>{l s='Add a new template' mod='pschoosetemplate'}</h4>
+		<h4>{l s='Add a new template' mod='thememanager'}</h4>
 		<div class="form-group">
 			<label class="col-lg-1">
-				{l s='For' mod='pschoosetemplate'}
+				{l s='For' mod='thememanager'}
 			</label>
 			<div class="col-lg-2">
 				<select name="template_entity">
-					<option value="product">{l s='Products' mod='pschoosetemplate'}</option>
-					<option value="category">{l s='Categories' mod='pschoosetemplate'}</option>
+					<option value="product">{l s='Products' mod='thememanager'}</option>
+					<option value="category">{l s='Categories' mod='thememanager'}</option>
 				</select>
 			</div>
 			<div class="col-lg-2">
 				<input type="file" name="new_template">
 			</div>
 			<div class="col-lg-2">
-				<button id="add_new_template" type="submit" class="btn btn-default" name="addNewTemplate">{l s='Add' mod='pschoosetemplate'}</button>
+				<button id="add_new_template" type="submit" class="btn btn-default" name="addNewTemplate">{l s='Add' mod='thememanager'}</button>
 			</div>
 		</div>
 
 		<script>
 			$(document).ready(function() {
 				$('#add_new_template').click(function(e) {
-					var confirm_me = confirm("{l s='Any file with the same name will be overwritten. Proceed?' mod='pschoosetemplate'}")
+					var confirm_me = confirm("{l s='Any file with the same name will be overwritten. Proceed?' mod='thememanager'}")
 					if(confirm_me == false)
 						e.preventDefault();
 				});
@@ -96,6 +96,6 @@
 
 	</form>
 	<div class="panel-footer">
-		<button id="submit_config"  type="submit" name="submitConfig" class="btn btn-default pull-right"><i class="process-icon-save"></i> {l s='Save' mod='pschoosetemplate'}</button>
+		<button id="submit_config"  type="submit" name="submitConfig" class="btn btn-default pull-right"><i class="process-icon-save"></i> {l s='Save' mod='thememanager'}</button>
 	</div>
 </div>
